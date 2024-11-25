@@ -68,7 +68,7 @@ namespace RoubaMonte
                     log.WriteLine("");
                     if (ShowAvailable(available, log))
                     {
-                        // check for available to steal
+                        // check for available to steal h
                     }
                     else
                     {
