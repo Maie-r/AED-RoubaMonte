@@ -10,15 +10,13 @@ namespace RoubaMonte
     {
 
         public string Nome;
-        public int ID;
         public int Posição;
         public int monteAmount;
         Deck monte;
         Queue<int> ranks;
-        public Jogador(int id, string nome)
+        public Jogador(string nome)
         {
             Nome = nome;
-            ID = id;
             monteAmount = 0;
             Posição = 0;
             monte = new Deck(this);
@@ -52,6 +50,18 @@ namespace RoubaMonte
             //Console.WriteLine($"Monte roubado: de {monteroubado.Owner.Nome}, {monteroubado.Count} cartas");
             //Console.WriteLine($"Monte prop: de {monte.Owner.Nome}, {monte.Count} cartas");
             //Console.ReadLine();
+        }
+
+        public void DisplayRankings(LogWriter log)
+        {
+            log.Write($"{Nome}: \t");
+            string ad = "";
+            foreach (int pos in Ranks)
+            {
+                log.Write($"{ad}{pos}");
+                ad = "-";
+            }
+            log.WriteLine("");
         }
     }
 }

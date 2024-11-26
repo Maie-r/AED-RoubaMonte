@@ -16,6 +16,7 @@ namespace RoubaMonte
             string date = DateTime.Now.ToString().Replace(':', '-').Replace('/', '_');
             LogWriter log = new LogWriter($"matchlog{date}.txt");
             Console.WriteLine("Bem vindo ao Rouba Monte!\n");
+            List<Jogador> TotalJogadores = new List<Jogador>();
             bool gameon = true;
             for (int o = 1; gameon; o++)
             {
@@ -35,7 +36,15 @@ namespace RoubaMonte
                     log.Write($"Nome do jogador {i + 1}: ");
                     string temp = Console.ReadLine();
                     log.OnlyWriteLine(temp);
-                    players.Add(new Jogador(i, temp));
+                    int pos = ExistsIn(TotalJogadores, temp.ToLower());
+                    if (pos >= 0)
+                        players.Add(TotalJogadores[pos]);
+                    else
+                    {
+                        Jogador tmp = new Jogador(temp);
+                        players.Add(tmp);
+                        TotalJogadores.Add(tmp);
+                    }
                 }
                 Console.WriteLine("Modo rápido? (S/N)");
                 string h = Console.ReadLine().ToLower();
@@ -50,6 +59,11 @@ namespace RoubaMonte
                 else
                 {
                     GameProper(players, buydeck, log, false, false);
+                }
+                log.WriteLine("\n\nHistórico de pontuações:\n");
+                foreach (Jogador player in TotalJogadores)
+                {
+                    player.DisplayRankings(log);
                 }
                 Console.WriteLine("Jogar outra rodada? (S/N)");
                 if (Console.ReadLine().ToLower() == "s")
@@ -73,13 +87,14 @@ namespace RoubaMonte
                 PlayerDecks.Add(players[i].ID, players[i].Monte);
             }*/
             List<Deck> OnBoard = new List<Deck>();
-            Jogador world = new Jogador(-1, "Mundo");
+            Jogador world = new Jogador("Mundo");
             int round = 0;
             while (buydeck.last > 0)
             {
-                for (int i = 0; i < players.Count; i++) // players ordered clockwise
+                for (int i = 0; i < players.Count && buydeck.last > 0; i++) // players ordered clockwise
                 {
                     round++;
+                    log.WriteLine($"{round}");
                     Console.Clear();
                     log.OnlyWriteLine("");
                     bool lesserskip = true;
@@ -238,6 +253,11 @@ namespace RoubaMonte
             Winners.Add(1, new List<Jogador>());
             Winners[1].Add(players[0]);
             players[0].Posição = 1;
+            if (players[0].Ranks.Count >= 5)
+            {
+                players[0].Ranks.Dequeue();
+            }
+            players[0].Ranks.Enqueue(1);
             for (int i = 1, j = 1; i < players.Count; i++)
             {
                 if (players[i-1].monteAmount > players[i].monteAmount)
@@ -262,6 +282,16 @@ namespace RoubaMonte
                 }
             }
             return Winners;
+        }
+
+        static int ExistsIn(List<Jogador> players, string name)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].Nome.ToLower() == name)
+                    return i;
+            }
+            return -1;
         }
     }
     class LogWriter
