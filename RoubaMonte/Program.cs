@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 
 namespace RoubaMonte
 {
@@ -22,15 +24,11 @@ namespace RoubaMonte
                 int playeramount = int.Parse(Console.ReadLine());
                 Console.Write("Quantos Baralhos em jogo: ");
                 int deckamount = int.Parse(Console.ReadLine());
-                log.OnlyWriteLine($"Jogadores: {playeramount}\nBaralhos em jogo: {deckamount}");
+                log.OnlyWriteLine($"Jogadores: {playeramount}\nBaralhos em jogo: {deckamount} ({deckamount * 52} cartas)");
                 BuyDeck buydeck = new BuyDeck(deckamount);
                 buydeck.Fill();
                 buydeck.Shuffle();
-                /*for (int i = 0; i < 52*buydeck.multiplier; i++)
-                {
-                    buydeck.Draw().Show();
-                    Console.WriteLine();
-                }*/
+                
                 List<Jogador> players = new List<Jogador>();
                 for (int i = 0; i < playeramount; i++)
                 {
@@ -39,7 +37,20 @@ namespace RoubaMonte
                     log.OnlyWriteLine(temp);
                     players.Add(new Jogador(i, temp));
                 }
-                Jogador Winner = GameProper(players, buydeck, log);
+                Console.WriteLine("Modo rápido? (S/N)");
+                string h = Console.ReadLine().ToLower();
+                if (h == "s")
+                {
+                    GameProper(players, buydeck, log, true, false);
+                }
+                else if (h == "auto")
+                {
+                    GameProper(players, buydeck, log, true, true);
+                }
+                else
+                {
+                    GameProper(players, buydeck, log, false, false);
+                }
                 Console.WriteLine("Jogar outra rodada? (S/N)");
                 if (Console.ReadLine().ToLower() == "s")
                 {
@@ -54,41 +65,203 @@ namespace RoubaMonte
             
         }
 
-        static Jogador GameProper(List<Jogador> players, BuyDeck buydeck, LogWriter log)
+        static Jogador GameProper(List<Jogador> players, BuyDeck buydeck, LogWriter log, bool skip, bool auto)
         {
-            List<Deck> available = new List<Deck>();
+            /*Dictionary<int, Deck> PlayerDecks = new Dictionary<int, Deck>();
+            for (int i = 0; i < players.Count; i++)
+            {
+                PlayerDecks.Add(players[i].ID, players[i].Monte);
+            }*/
+            List<Deck> OnBoard = new List<Deck>();
+            Jogador world = new Jogador(-1, "Mundo");
+            int round = 0;
             while (buydeck.last > 0)
             {
-                for (int i = 0; i < players.Count;i++) // players ordered clockwise
+                for (int i = 0; i < players.Count; i++) // players ordered clockwise
                 {
+                    round++;
                     Console.Clear();
+                    log.OnlyWriteLine("");
+                    bool lesserskip = true;
                     log.Write($"{players[i].Nome} pega uma carta do monte de compra: ");
                     Card cartahora = buydeck.Draw();
                     cartahora.Show(log);
                     log.WriteLine("");
-                    if (ShowAvailable(available, log))
+                    List<int> available = ShowAvailable(OnBoard, players, cartahora, log);
+                    if (available.Count == 0)
                     {
-                        // check for available to steal h
+                        if (players[i].Monte.Count <= 0)
+                        {
+                            log.WriteLine($"Nenhum dos montes é roubavel, e o jogador não têm um monte, logo, {players[i].Nome} inicia um novo monte!");
+                            players[i].Monte.Pile(cartahora);
+                            //PlayerDecks.Add(players[i].ID, players[i].Monte);
+                            // Create player deck
+                        }
+                        else
+                        {
+                            log.WriteLine("Nenhum dos montes é roubavel, e não encaixa no monte do jogador, logo, uma nova carta aparece na area de descarte!");
+                            OnBoard.Add(new Deck(cartahora, world));
+                            // put card on board
+                        }
+                    }
+                    else if (cartahora.Value == players[i].Monte.Peek().Value)
+                    {
+                        log.WriteLine("A carta encaixa em seu próprio monte, logo, é empilhado.");
+                        players[i].Monte.Pile(cartahora);
+                        // put card on own deck
                     }
                     else
                     {
-                        // put card on board
+                        log.WriteLine("Um monte pode ser roubado! Escolha: ");
+                        int choice;
+                        if (auto)
+                        {
+                            choice = 0;
+                            while (!available.Contains(choice - 1))
+                            {
+                                choice++;
+                            }
+                        }
+                        else
+                        {
+                            choice = -1;
+                            while (!available.Contains(choice - 1))
+                            {
+                                choice = int.Parse(Console.ReadLine());
+                            }
+                        }
+                        if (choice <= players.Count)
+                        {
+                            players[i].Roubar(players[choice - 1].Monte);
+                        }
+                        else
+                        {
+                            players[i].Roubar(OnBoard[choice - 1 - players.Count]);
+                            OnBoard.RemoveAt(choice - 1 - players.Count);
+                        }
+                        lesserskip = false;
+                        // get player deck
                     }
-                    Console.ReadLine();
+                    if (!skip)
+                    {
+                        if (lesserskip)
+                            Console.ReadLine();
+                    }
                 }
             }
+            Console.Clear();
+            Console.WriteLine(round + " Rodadas");
+            Dictionary<int, List<Jogador>> Winners = SetScore(players);
+            log.WriteLine("Fim de Jogo!");
+            log.Write("Vitória de ");
+            string add = "";
+            foreach (Jogador player in Winners[1])
+            {
+                log.Write(add + $"{player.Nome}");
+                add = " e ";
+            }
+            log.WriteLine("\nRankings:");
+            foreach (KeyValuePair<int, List<Jogador>> kv in Winners)
+            {
+                foreach (Jogador player in kv.Value)
+                {
+                    log.WriteLine($"#{player.Posição} - {player.Nome} - {player.monteAmount} Cartas");
+                }
+            }
+            Console.ReadLine();
             return players[0];
         }
 
-        static bool ShowAvailable(List<Deck> available, LogWriter log)
+        static List<int> ShowAvailable(List<Deck> OnBoard, List<Jogador> players, Card cartahora, LogWriter log)
         {
-            if (available.Count <= 0)
-                return false;
-            foreach (Deck deck in available)
+            List<int> temp = new List<int>();
+            for (int i = 0; i < players.Count; i++)
             {
-                log.WriteLine($"{deck.Owner}: {deck.Peek()}");
+                if (players[i].Monte.Count > 0)
+                {
+                    log.Write($"({players[i].Monte.Count}) {players[i].Nome}: ");
+                    players[i].Monte.Peek().Show(log);
+                    if (players[i].Monte.Peek().Value == cartahora.Value)
+                    {
+                        temp.Add(i);
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        log.Write($" ({i + 1})");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    log.WriteLine("");
+                }
+                else
+                {
+                    log.Write($"({players[i].Monte.Count}) {players[i].Nome}: VAZIO\n");
+                }
             }
-            return true;
+            if (temp.Count <= 0)
+            {
+                for (int i = 0; i < OnBoard.Count; i++)
+                {
+                    //if (OnBoard[i].Count > 0)
+                    //{
+                    log.Write($"({OnBoard[i].Count}) {OnBoard[i].Owner.Nome}: ");
+                    OnBoard[i].Peek().Show(log);
+                    if (OnBoard[i].Peek().Value == cartahora.Value)
+                    {
+                        temp.Add(i + players.Count);
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        log.Write($" ({i + players.Count + 1})");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    log.WriteLine("");
+                    //}
+                }
+            }
+            
+            return temp;
+        }
+
+        static Dictionary<int, List<Jogador>> SetScore(List<Jogador> players)
+        {
+            Dictionary<int, List<Jogador>> Winners = new Dictionary<int, List<Jogador>>();
+            players[0].monteAmount = players[0].Monte.Count;
+            for (int i = 1; i < players.Count; i++)
+            {
+                players[i].monteAmount = players[i].Monte.Count;
+                Jogador current = players[i];
+                int j = i - 1;
+                while (j >= 0 && players[j].monteAmount > current.monteAmount)
+                {
+                    players[j + 1] = players[j];
+                    j--;
+                }
+                players[j + 1] = current;
+            }
+            players.Reverse();
+            Winners.Add(1, new List<Jogador>());
+            Winners[1].Add(players[0]);
+            players[0].Posição = 1;
+            for (int i = 1, j = 1; i < players.Count; i++)
+            {
+                if (players[i-1].monteAmount > players[i].monteAmount)
+                {
+                    j++;
+                }
+                if (players[i].Ranks.Count >= 5)
+                {
+                    players[i].Ranks.Dequeue();
+                }
+                players[i].Ranks.Enqueue(j);
+                if (Winners.ContainsKey(j))
+                {
+                    Winners[j].Add(players[i]);
+                    players[i].Posição = j;
+                }
+                else
+                {
+                    Winners.Add(j, new List<Jogador>());
+                    Winners[j].Add(players[i]);
+                    players[i].Posição = j;
+                }
+            }
+            return Winners;
         }
     }
     class LogWriter

@@ -23,6 +23,10 @@ namespace RoubaMonte
             set { next = value; }
         }
         
+        public int Value
+        {
+            get { return value; }
+        }
         public void Show()
         {
             Console.BackgroundColor = ConsoleColor.White;

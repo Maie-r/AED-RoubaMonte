@@ -35,13 +35,23 @@ namespace RoubaMonte
             set { ranks = value; }
         }
 
-        public void Roubar(Deck monteroubado) // make check in the game
+        public void Roubar(Deck monteroubado)
         {
+            //Console.WriteLine($"Monte a ser roubado: de {monteroubado.Owner.Nome}, {monteroubado.Count} cartas");
+            //Console.WriteLine($"Monte prop: de {monte.Owner.Nome}, {monte.Count} cartas");
+            monte.Count += monteroubado.Count;
+            monteroubado.Owner.Monte = new Deck(monteroubado.Owner);
             monteroubado.Bottom.Next = monte.Top;
-            monte.Top.Next = monteroubado.Top.Next;
             monte.Top = monteroubado.Top;
-            monteroubado.Top = null;
-            monteroubado = null;
+            if (monte.Bottom == null)
+            {
+                monte.Bottom = monte.Top;
+            }
+            monte.Top.Next = monteroubado.Top.Next;
+            monteroubado.Empty();
+            //Console.WriteLine($"Monte roubado: de {monteroubado.Owner.Nome}, {monteroubado.Count} cartas");
+            //Console.WriteLine($"Monte prop: de {monte.Owner.Nome}, {monte.Count} cartas");
+            //Console.ReadLine();
         }
     }
 }

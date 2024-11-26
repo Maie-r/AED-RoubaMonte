@@ -11,7 +11,7 @@ namespace RoubaMonte
         public Card Bottom;
         public Card Top;
         public Jogador Owner;
-        int Count;
+        int count;
 
         public Deck()
         {
@@ -23,6 +23,19 @@ namespace RoubaMonte
             Owner = player;
             Top = Bottom = null;
             Count = 0;
+        }
+
+        public Deck(Card carta, Jogador player)
+        {
+            Owner = player;
+            Top = Bottom = carta;
+            Count = 1;
+        }
+
+        public int Count
+        {
+            get { return count; }
+            set { count = value; }
         }
 
         public void Pile(Card card)
@@ -45,7 +58,17 @@ namespace RoubaMonte
         }
         public Card Peek()
         {
+            if (Top == null)
+            {
+                return new Card(-1, ' ');
+            }
             return Top;
+        }
+
+        public void Empty()
+        {
+            Top = Bottom = null;
+            Count = 0;
         }
 
         /*public void Fill()
