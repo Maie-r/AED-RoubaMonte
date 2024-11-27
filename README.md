@@ -6,6 +6,9 @@ Ver History:
   * Added user saving up to 5 last matches (user is the same of the name is identical)
 * 1.0
   * Entire rest of the game made. Completed GameProper method, with adjustments to the other classes.
+
+    ![RoubaMonte_qVm7fcdDqg](https://github.com/user-attachments/assets/ae48d374-7ee6-49a4-a26b-a33eda75d188)
+    
 * 0.1
   * Initial Build. Has the BuyDeck (Linear Structure), Deck (Flexible Structure), Jogador and Card Classes built. Further development will go on through the game logic implementation, which so far only allows you to go through the buy deck.
 
