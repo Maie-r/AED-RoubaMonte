@@ -51,6 +51,16 @@ namespace RoubaMonte
             //Console.WriteLine($"Monte prop: de {monte.Owner.Nome}, {monte.Count} cartas");
             //Console.ReadLine();
         }
+        public void Roubar(Card cartaroubada)
+        {
+            monte.Count++;
+            cartaroubada.Next = monte.Top;
+            monte.Top = cartaroubada;
+            if (monte.Bottom == null)
+            {
+                monte.Bottom = monte.Top;
+            }
+        }
 
         public void DisplayRankings(LogWriter log)
         {

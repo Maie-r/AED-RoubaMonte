@@ -60,19 +60,44 @@ namespace RoubaMonte
                 {
                     GameProper(players, buydeck, log, false, false);
                 }
-                log.WriteLine("\n\nHistórico de pontuações:\n");
+                /*log.WriteLine("\n\nHistórico de pontuações:\n");
                 foreach (Jogador player in TotalJogadores)
                 {
                     player.DisplayRankings(log);
-                }
-                Console.WriteLine("Jogar outra rodada? (S/N)");
-                if (Console.ReadLine().ToLower() == "s")
+                }*/
+                int menu;
+                bool valid = true;
+                log.WriteLine("1- Jogar outra rodada\n2- Mostrar ranking de um jogador\n3- Sair");
+                while (valid)
                 {
-                    Console.WriteLine(""); // afterwards will need to check for same players and different ones
-                }
-                else
-                {
-                    gameon = false;
+                    menu = int.Parse(Console.ReadLine());
+                    switch (menu)
+                    {
+                        case 1:
+                            log.OnlyWriteLine($"{menu}");
+                            valid = false;
+                            break;
+                        case 2:
+                            log.OnlyWriteLine($"{menu}");
+                            log.WriteLine("Qual jogador?");
+                            string player = Console.ReadLine().ToLower();
+                            log.OnlyWriteLine(player);
+                            int i = ExistsIn(TotalJogadores, player);
+                            if (i < 0)
+                            {
+                                log.WriteLine("Não achamos este jogador.");
+                            }
+                            else
+                            {
+                                TotalJogadores[i].DisplayRankings(log);
+                            }
+                            log.WriteLine("\n1- Jogar outra rodada\n2- Mostrar ranking de um jogador\n3- Sair");
+                            break;
+                        case 3:
+                            gameon = false;
+                            valid = false;
+                            break;
+                    }
                 }
                 Console.Clear();
             }
@@ -86,8 +111,8 @@ namespace RoubaMonte
             {
                 PlayerDecks.Add(players[i].ID, players[i].Monte);
             }*/
-            List<Deck> OnBoard = new List<Deck>();
-            Jogador world = new Jogador("Mundo");
+            List<Card> OnBoard = new List<Card>();
+            //Jogador world = new Jogador("Mundo");
             int round = 0;
             while (buydeck.last > 0)
             {
@@ -115,7 +140,7 @@ namespace RoubaMonte
                         else
                         {
                             log.WriteLine("Nenhum dos montes é roubavel, e não encaixa no monte do jogador, logo, uma nova carta aparece na area de descarte!");
-                            OnBoard.Add(new Deck(cartahora, world));
+                            OnBoard.Add(cartahora);
                             // put card on board
                         }
                     }
@@ -181,13 +206,13 @@ namespace RoubaMonte
                 foreach (Jogador player in kv.Value)
                 {
                     log.WriteLine($"#{player.Posição} - {player.Nome} - {player.monteAmount} Cartas");
+                    player.Monte.Empty();
                 }
             }
-            Console.ReadLine();
             return players[0];
         }
 
-        static List<int> ShowAvailable(List<Deck> OnBoard, List<Jogador> players, Card cartahora, LogWriter log)
+        static List<int> ShowAvailable(List<Card> OnBoard, List<Jogador> players, Card cartahora, LogWriter log)
         {
             List<int> temp = new List<int>();
             for (int i = 0; i < players.Count; i++)
@@ -210,26 +235,22 @@ namespace RoubaMonte
                     log.Write($"({players[i].Monte.Count}) {players[i].Nome}: VAZIO\n");
                 }
             }
-            if (temp.Count <= 0)
+            log.WriteLine("Area de descarte:");
+            for (int i = 0; i < OnBoard.Count; i++)
             {
-                for (int i = 0; i < OnBoard.Count; i++)
+                OnBoard[i].Show(log);
+                if (temp.Count <= 0)
                 {
-                    //if (OnBoard[i].Count > 0)
-                    //{
-                    log.Write($"({OnBoard[i].Count}) {OnBoard[i].Owner.Nome}: ");
-                    OnBoard[i].Peek().Show(log);
-                    if (OnBoard[i].Peek().Value == cartahora.Value)
+                    if (OnBoard[i].Value == cartahora.Value)
                     {
                         temp.Add(i + players.Count);
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         log.Write($" ({i + players.Count + 1})");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
-                    log.WriteLine("");
-                    //}
                 }
-            }
-            
+                log.WriteLine("");
+            } 
             return temp;
         }
 
