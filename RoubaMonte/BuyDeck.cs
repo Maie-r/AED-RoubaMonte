@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,7 @@ namespace RoubaMonte
         public int last;
         public int multiplier;
 
-        public BuyDeck(int n)// n = quantidade de baralhos
+        public BuyDeck(int n)
         {
             deck = new Card[52*n];
             multiplier = n;
