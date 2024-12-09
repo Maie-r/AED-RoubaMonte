@@ -2,6 +2,10 @@
 Simulação do jogo Rouba Monte em uma aplicação de console.
 
 Ver History:
+* 1.4
+  * Optimized ShowAvailable to only one int value, since you can only have one choice.
+  * Adjusted SetScore to use 0 index, shornening the code.
+  * Cleaned up useless return values in GameProper
 * 1.3
   * Fixed a major flaw in card stacking logic: Previously the drawn card was ignored when counting and stacking into player decks.
 * 1.2
