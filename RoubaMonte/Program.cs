@@ -113,8 +113,8 @@ namespace RoubaMonte
                     Card cartahora = buydeck.Draw();
                     cartahora.Show(log);
                     log.WriteLine("");
-                    List<int> available = ShowAvailable(OnBoard, players, cartahora, log);
-                    if (available.Count == 0)
+                    int available = ShowAvailable(OnBoard, players, cartahora, log);
+                    if (available < 0)
                     {
                         if (players[i].Monte.Count <= 0)
                         {
@@ -138,16 +138,12 @@ namespace RoubaMonte
                         int choice;
                         if (auto)
                         {
-                            choice = 0;
-                            while (!available.Contains(choice - 1))
-                            {
-                                choice++;
-                            }
+                            choice = available + 1;
                         }
                         else
                         {
                             choice = -1;
-                            while (!available.Contains(choice - 1))
+                            while (choice != available)
                             {
                                 choice = int.Parse(Console.ReadLine());
                             }
@@ -182,7 +178,7 @@ namespace RoubaMonte
                 log.Write(add + $"{player.Nome}");
                 add = " e ";
             }
-            log.WriteLine("\nRankings:");
+            log.WriteLine("\nRanking:");
             foreach (KeyValuePair<int, List<Jogador>> kv in Winners)
             {
                 foreach (Jogador player in kv.Value)
@@ -194,9 +190,9 @@ namespace RoubaMonte
             return players[0];
         }
 
-        static List<int> ShowAvailable(List<Card> OnBoard, List<Jogador> players, Card cartahora, LogWriter log)
+        static int ShowAvailable(List<Card> OnBoard, List<Jogador> players, Card cartahora, LogWriter log)
         {
-            List<int> temp = new List<int>();
+            int available = -1;
             for (int i = 0; i < players.Count; i++)
             {
                 if (players[i].Monte.Count > 0)
@@ -205,7 +201,7 @@ namespace RoubaMonte
                     players[i].Monte.Peek().Show(log);
                     if (players[i].Monte.Peek().Value == cartahora.Value)
                     {
-                        temp.Add(i);
+                        available = i;
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         log.Write($" ({i + 1})");
                         Console.ForegroundColor = ConsoleColor.White;
@@ -221,26 +217,25 @@ namespace RoubaMonte
             for (int i = 0; i < OnBoard.Count; i++)
             {
                 OnBoard[i].Show(log);
-                if (temp.Count <= 0)
+                if (available < 0)
                 {
                     if (OnBoard[i].Value == cartahora.Value)
                     {
-                        temp.Add(i + players.Count);
+                        available = i + players.Count;
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         log.Write($" ({i + players.Count + 1})");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
                 log.WriteLine("");
-            } 
-            return temp;
+            }
+            return available;
         }
 
         static Dictionary<int, List<Jogador>> SetScore(List<Jogador> players)
         {
             Dictionary<int, List<Jogador>> Winners = new Dictionary<int, List<Jogador>>();
-            players[0].monteAmount = players[0].Monte.Count;
-            for (int i = 1; i < players.Count; i++)
+            for (int i = 0; i < players.Count; i++)
             {
                 players[i].monteAmount = players[i].Monte.Count;
                 Jogador current = players[i];
@@ -253,20 +248,8 @@ namespace RoubaMonte
                 players[j + 1] = current;
             }
             players.Reverse();
-            Winners.Add(1, new List<Jogador>());
-            Winners[1].Add(players[0]);
-            players[0].Posição = 1;
-            if (players[0].Ranks.Count >= 5)
+            for (int i = 0, j = 1; i < players.Count - 1; i++)
             {
-                players[0].Ranks.Dequeue();
-            }
-            players[0].Ranks.Enqueue(1);
-            for (int i = 1, j = 1; i < players.Count; i++)
-            {
-                if (players[i-1].monteAmount > players[i].monteAmount)
-                {
-                    j++;
-                }
                 if (players[i].Ranks.Count >= 5)
                 {
                     players[i].Ranks.Dequeue();
@@ -282,6 +265,10 @@ namespace RoubaMonte
                     Winners.Add(j, new List<Jogador>());
                     Winners[j].Add(players[i]);
                     players[i].Posição = j;
+                }
+                if (players[i].monteAmount > players[i + 1].monteAmount)
+                {
+                    j++;
                 }
             }
             return Winners;
