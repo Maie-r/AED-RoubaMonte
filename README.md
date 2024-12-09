@@ -2,6 +2,8 @@
 Simulação do jogo Rouba Monte em uma aplicação de console.
 
 Ver History:
+* 1.3
+  * Fixed a major flaw in card stacking logic: Previously the drawn card was ignored when counting and stacking into player decks.
 * 1.2
   * Optimized Discard area logic, using only a list element containing cards, instead of needing a new player and new deck instance for each new discard area card
   * Added smaller menu after a game, to show some other options such as showing the ranking of a specific player
