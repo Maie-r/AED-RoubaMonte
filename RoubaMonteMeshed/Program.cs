@@ -1,14 +1,304 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Schema;
 
 namespace RoubaMonte
 {
+    internal class Card
+    {
+        int value;
+        char type;
+        Card next;
+
+        public Card(int value, char type)
+        {
+            this.value = value;
+            this.type = type;
+        }
+        public Card Next
+        {
+            get { return next; }
+            set { next = value; }
+        }
+
+        public int Value
+        {
+            get { return value; }
+        }
+        public void Show()
+        {
+            Console.BackgroundColor = ConsoleColor.White;
+            if (type == '♥' || type == '♦')
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Black;
+            }
+            string value = "";
+            if (this.value > 10)
+            {
+                switch (this.value)
+                {
+                    case 11:
+                        value = "J";
+                        break;
+                    case 12:
+                        value = "Q";
+                        break;
+                    case 13:
+                        value = "K";
+                        break;
+
+                }
+            }
+            else if (this.value == 1)
+            {
+                value = "A";
+            }
+            else
+            {
+                value = $"{this.value}";
+            }
+            Console.Write($" {type} {value} {type} ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.BackgroundColor = ConsoleColor.Black;
+        }
+        public void Show(LogWriter log)
+        {
+            Console.BackgroundColor = ConsoleColor.White;
+            if (type == '♥' || type == '♦')
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Black;
+            }
+            string value = "";
+            if (this.value > 10)
+            {
+                switch (this.value)
+                {
+                    case 11:
+                        value = "J";
+                        break;
+                    case 12:
+                        value = "Q";
+                        break;
+                    case 13:
+                        value = "K";
+                        break;
+
+                }
+            }
+            else if (this.value == 1)
+            {
+                value = "A";
+            }
+            else
+            {
+                value = $"{this.value}";
+            }
+            log.Write($" {type} {value} {type} ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.BackgroundColor = ConsoleColor.Black;
+        }
+    }
+    internal class BuyDeck
+    {
+        Card[] deck;
+        public int last;
+        public int multiplier;
+
+        public BuyDeck(int n)
+        {
+            deck = new Card[52 * n];
+            multiplier = n;
+            last = 0;
+        }
+
+        public void Pile(Card card)
+        {
+            deck[last] = card;
+            last++;
+        }
+
+        public Card Draw()
+        {
+            return deck[--last];
+        }
+
+        public void Fill()
+        {
+            for (int k = 0; k < multiplier; k++)
+            {
+                char type = '♥';
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int j = 1; j < 14; j++)
+                    {
+                        Card t = new Card(j, type);
+                        Pile(t);
+                    }
+                    switch (i)
+                    {
+                        case 0:
+                            type = '♦';
+                            break;
+                        case 1:
+                            type = '♣';
+                            break;
+                        case 2:
+                            type = '♠';
+                            break;
+                    }
+                }
+            }
+        }
+        public void Shuffle()
+        {
+            Random r = new Random();
+            for (int n = deck.Length - 1; n > 0; --n)
+            {
+                int t = r.Next(n + 1);
+                Card temp = deck[n];
+                deck[n] = deck[t];
+                deck[t] = temp;
+            }
+        }
+    }
+    internal class Deck
+    {
+        public Card Bottom;
+        public Card Top;
+        public Jogador Owner;
+        int count;
+
+        public Deck()
+        {
+            Top = Bottom = null;
+            Count = 0;
+        }
+        public Deck(Jogador player)
+        {
+            Owner = player;
+            Top = Bottom = null;
+            Count = 0;
+        }
+
+        public Deck(Card carta, Jogador player)
+        {
+            Owner = player;
+            Top = Bottom = carta;
+            Count = 1;
+        }
+
+        public int Count
+        {
+            get { return count; }
+            set { count = value; }
+        }
+
+        public void Pile(Card card)
+        {
+            if (Bottom == null)
+            {
+                Bottom = card;
+            }
+            card.Next = Top;
+            Top = card;
+            Count++;
+        }
+
+        public Card Draw()
+        {
+            Card temp = Top;
+            Top = Top.Next;
+            Count--;
+            return temp;
+        }
+        public Card Peek()
+        {
+            if (Top == null)
+            {
+                return new Card(-1, ' ');
+            }
+            return Top;
+        }
+
+        public void Empty()
+        {
+            Top = Bottom = null;
+            Count = 0;
+        }
+    }
+    internal class Jogador
+    {
+
+        public string Nome;
+        public int Posição;
+        public int monteAmount;
+        Deck monte;
+        Queue<int> ranks;
+        public Jogador(string nome)
+        {
+            Nome = nome;
+            monteAmount = 0;
+            Posição = 0;
+            monte = new Deck(this);
+            ranks = new Queue<int>();
+        }
+        public Deck Monte
+        {
+            get { return monte; }
+            set { monte = value; }
+        }
+        public Queue<int> Ranks
+        {
+            get { return ranks; }
+            set { ranks = value; }
+        }
+
+        public void Roubar(Deck monteroubado)
+        {
+            monte.Count += monteroubado.Count;
+            monteroubado.Bottom.Next = monte.Top;
+            monte.Top = monteroubado.Top;
+            if (monte.Bottom == null)
+            {
+                monte.Bottom = monte.Top;
+            }
+            monte.Top.Next = monteroubado.Top.Next;
+            monteroubado.Empty();
+        }
+        public void Roubar(Card cartaroubada)
+        {
+            monte.Count++;
+            cartaroubada.Next = monte.Top;
+            monte.Top = cartaroubada;
+            if (monte.Bottom == null)
+            {
+                monte.Bottom = monte.Top;
+            }
+        }
+
+        public void DisplayRankings(LogWriter log)
+        {
+            log.Write($"{Nome}: \t");
+            string ad = "";
+            foreach (int pos in Ranks)
+            {
+                log.Write($"{ad}{pos}");
+                ad = "-";
+            }
+            log.WriteLine("");
+        }
+    }
     internal class Program
     {
         static void Main(string[] args)
@@ -29,7 +319,7 @@ namespace RoubaMonte
                 BuyDeck buydeck = new BuyDeck(deckamount);
                 buydeck.Fill();
                 buydeck.Shuffle();
-                
+
                 List<Jogador> players = new List<Jogador>();
                 for (int i = 0; i < playeramount; i++)
                 {
@@ -96,7 +386,7 @@ namespace RoubaMonte
                 }
                 Console.Clear();
             }
-            
+
         }
 
         static Jogador GameProper(List<Jogador> players, BuyDeck buydeck, LogWriter log, bool skip, bool auto)
@@ -232,7 +522,7 @@ namespace RoubaMonte
                     }
                 }
                 log.WriteLine("");
-            } 
+            }
             return temp;
         }
 
@@ -263,7 +553,7 @@ namespace RoubaMonte
             players[0].Ranks.Enqueue(1);
             for (int i = 1, j = 1; i < players.Count; i++)
             {
-                if (players[i-1].monteAmount > players[i].monteAmount)
+                if (players[i - 1].monteAmount > players[i].monteAmount)
                 {
                     j++;
                 }
