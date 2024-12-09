@@ -319,7 +319,6 @@ namespace RoubaMonte
                 BuyDeck buydeck = new BuyDeck(deckamount);
                 buydeck.Fill();
                 buydeck.Shuffle();
-
                 List<Jogador> players = new List<Jogador>();
                 for (int i = 0; i < playeramount; i++)
                 {
@@ -351,16 +350,16 @@ namespace RoubaMonte
                     GameProper(players, buydeck, log, false, false);
                 }
                 int menu;
-                bool valid = true;
+                bool invalid = true;
                 log.WriteLine("1- Jogar outra rodada\n2- Mostrar ranking de um jogador\n3- Sair");
-                while (valid)
+                while (invalid)
                 {
                     menu = int.Parse(Console.ReadLine());
                     switch (menu)
                     {
                         case 1:
                             log.OnlyWriteLine($"{menu}");
-                            valid = false;
+                            invalid = false;
                             break;
                         case 2:
                             log.OnlyWriteLine($"{menu}");
@@ -380,16 +379,15 @@ namespace RoubaMonte
                             break;
                         case 3:
                             gameon = false;
-                            valid = false;
+                            invalid = false;
                             break;
                     }
                 }
                 Console.Clear();
             }
-
         }
 
-        static Jogador GameProper(List<Jogador> players, BuyDeck buydeck, LogWriter log, bool skip, bool auto)
+        static void GameProper(List<Jogador> players, BuyDeck buydeck, LogWriter log, bool skip, bool auto)
         {
             List<Card> OnBoard = new List<Card>();
             while (buydeck.last > 0)
@@ -477,7 +475,6 @@ namespace RoubaMonte
                     player.Monte.Empty();
                 }
             }
-            return players[0];
         }
 
         static int ShowAvailable(List<Card> OnBoard, List<Jogador> players, Card cartahora, LogWriter log)
