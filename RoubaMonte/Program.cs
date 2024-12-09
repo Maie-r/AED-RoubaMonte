@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -60,11 +60,6 @@ namespace RoubaMonte
                 {
                     GameProper(players, buydeck, log, false, false);
                 }
-                /*log.WriteLine("\n\nHistórico de pontuações:\n");
-                foreach (Jogador player in TotalJogadores)
-                {
-                    player.DisplayRankings(log);
-                }*/
                 int menu;
                 bool valid = true;
                 log.WriteLine("1- Jogar outra rodada\n2- Mostrar ranking de um jogador\n3- Sair");
@@ -106,17 +101,11 @@ namespace RoubaMonte
 
         static Jogador GameProper(List<Jogador> players, BuyDeck buydeck, LogWriter log, bool skip, bool auto)
         {
-            /*Dictionary<int, Deck> PlayerDecks = new Dictionary<int, Deck>();
-            for (int i = 0; i < players.Count; i++)
-            {
-                PlayerDecks.Add(players[i].ID, players[i].Monte);
-            }*/
             List<Card> OnBoard = new List<Card>();
-            //Jogador world = new Jogador("Mundo");
             int round = 0;
             while (buydeck.last > 0)
             {
-                for (int i = 0; i < players.Count && buydeck.last > 0; i++) // players ordered clockwise
+                for (int i = 0; i < players.Count && buydeck.last > 0; i++)
                 {
                     round++;
                     log.WriteLine($"{round}");
@@ -134,21 +123,17 @@ namespace RoubaMonte
                         {
                             log.WriteLine($"Nenhum dos montes é roubavel, e o jogador não têm um monte, logo, {players[i].Nome} inicia um novo monte!");
                             players[i].Monte.Pile(cartahora);
-                            //PlayerDecks.Add(players[i].ID, players[i].Monte);
-                            // Create player deck
                         }
                         else
                         {
                             log.WriteLine("Nenhum dos montes é roubavel, e não encaixa no monte do jogador, logo, uma nova carta aparece na area de descarte!");
                             OnBoard.Add(cartahora);
-                            // put card on board
                         }
                     }
                     else if (cartahora.Value == players[i].Monte.Peek().Value)
                     {
                         log.WriteLine("A carta encaixa em seu próprio monte, logo, é empilhado.");
                         players[i].Monte.Pile(cartahora);
-                        // put card on own deck
                     }
                     else
                     {
@@ -180,7 +165,6 @@ namespace RoubaMonte
                             OnBoard.RemoveAt(choice - 1 - players.Count);
                         }
                         lesserskip = false;
-                        // get player deck
                     }
                     if (!skip)
                     {
