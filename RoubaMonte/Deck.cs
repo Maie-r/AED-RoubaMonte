@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,66 +70,5 @@ namespace RoubaMonte
             Top = Bottom = null;
             Count = 0;
         }
-
-        /*public void Fill()
-        {
-            char type = '♥';
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 13; j++)
-                {
-                    Card t = null;
-                    if (j >= 10)
-                    {
-                        switch (j)
-                        {
-                            case 10:
-                                t = new Card("J", type);
-                                break;
-                            case 11:
-                                t = new Card("Q", type);
-                                break;
-                            case 12:
-                                t = new Card("K", type);
-                                break;
-                                
-                        }
-                    }
-                    else if (j == 0)
-                    {
-                        t = new Card("A", type);
-                    }
-                    else
-                    {
-                        t = new Card($"{j + 1}", type);
-                    }
-                    Pile(t);
-                }
-                switch (i)
-                {
-                    case 0:
-                        type = '♦';
-                        break;
-                    case 1:
-                        type = '♣';
-                        break;
-                    case 2:
-                        type = '♠';
-                        break;
-                }
-            }
-        }
-
-        public void Shuffle()
-        {
-            Random r = new Random();
-            for (int n = deck.Length - 1; n > 0; --n)
-            {
-                int t = r.Next(n + 1);
-                Card temp = deck[n];
-                deck[n] = deck[t];
-                deck[t] = temp;
-            }
-        }*/
     }
 }
