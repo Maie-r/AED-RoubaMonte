@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,10 +35,7 @@ namespace RoubaMonte
 
         public void Roubar(Deck monteroubado)
         {
-            //Console.WriteLine($"Monte a ser roubado: de {monteroubado.Owner.Nome}, {monteroubado.Count} cartas");
-            //Console.WriteLine($"Monte prop: de {monte.Owner.Nome}, {monte.Count} cartas");
             monte.Count += monteroubado.Count;
-            monteroubado.Owner.Monte = new Deck(monteroubado.Owner);
             monteroubado.Bottom.Next = monte.Top;
             monte.Top = monteroubado.Top;
             if (monte.Bottom == null)
@@ -47,9 +44,6 @@ namespace RoubaMonte
             }
             monte.Top.Next = monteroubado.Top.Next;
             monteroubado.Empty();
-            //Console.WriteLine($"Monte roubado: de {monteroubado.Owner.Nome}, {monteroubado.Count} cartas");
-            //Console.WriteLine($"Monte prop: de {monte.Owner.Nome}, {monte.Count} cartas");
-            //Console.ReadLine();
         }
         public void Roubar(Card cartaroubada)
         {
