@@ -431,7 +431,7 @@ namespace RoubaMonte
                         else
                         {
                             choice = -1;
-                            while (choice != available)
+                            while (choice != available + 1)
                             {
                                 choice = int.Parse(Console.ReadLine());
                             }
